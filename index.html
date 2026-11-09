@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restaurant Table Connect</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #ffffff;
+        --primary: #0f6fff;
+        --primary-dark: #0b57c7;
+        --success: #1ca66a;
+        --warning: #f39c12;
+        --danger: #e74c3c;
+        --text: #1e293b;
+        --muted: #64748b;
+        --border: #dfe7f1;
+        --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(135deg, #eef5ff 0%, #f7f9fc 100%);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 32px auto;
+        padding: 20px;
+      }
+
+      .header {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        padding: 24px 30px;
+        margin-bottom: 24px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 2rem;
+      }
+
+      .subtitle {
+        margin-top: 8px;
+        color: var(--muted);
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 24px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .panel h2 {
+        margin-top: 0;
+        font-size: 1.3rem;
+      }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      input, select, button {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        font-size: 1rem;
+      }
+
+      input:focus, select:focus {
+        outline: 2px solid rgba(15, 111, 255, 0.18);
+        border-color: var(--primary);
+      }
+
+      button {
+        cursor: pointer;
+        font-weight: 700;
+        border: none;
+        background: var(--primary);
+        color: white;
+        transition: 0.2s ease;
+      }
+
+      button:hover {
+        background: var(--primary-dark);
+      }
+
+      .button-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .secondary {
+        background: #eaf3ff;
+        color: var(--primary-dark);
+      }
+
+      .secondary:hover {
+        background: #dfeeff;
+      }
+
+      .danger {
+        background: var(--danger);
+      }
+
+      .danger:hover {
+        background: #ce3c31;
+      }
+
+      .main {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(120px, 1fr));
+        gap: 16px;
+      }
+
+      .stat-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 18px 16px;
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-top: 8px;
+      }
+
+      .table-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+      }
+
+      .table-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+
+      .table-card .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+      }
+
+      .table-number {
+        font-size: 1.4rem;
+        font-weight: 700;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .status-available { background: rgba(28, 166, 106, 0.12); color: var(--success); }
+      .status-occupied { background: rgba(243, 156, 18, 0.12); color: #b76e00; }
+      .status-cleaning { background: rgba(231, 76, 60, 0.12); color: var(--danger); }
+
+      .meta {
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+
+      .empty {
+        background: var(--panel);
+        border: 1px dashed var(--border);
+        border-radius: 16px;
+        text-align: center;
+        padding: 32px 18px;
+        color: var(--muted);
+      }
+
+      @media (max-width: 860px) {
+        .content {
+          grid-template-columns: 1fr;
+        }
+
+        .stats {
+          grid-template-columns: repeat(2, minmax(120px, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Restaurant Table Connect</h1>
+        <div class="subtitle">Simple table tracking for a restaurant management system</div>
+      </div>
+
+      <div class="content">
+        <aside class="panel">
+          <h2>Add table</h2>
+
+          <div class="form-group">
+            <label for="tableNumber">Table Number</label>
+            <input id="tableNumber" type="number" min="1" placeholder="Example: 1" />
+          </div>
+
+          <div class="form-group">
+            <label for="tableCapacity">Capacity</label>
+            <input id="tableCapacity" type="number" min="1" placeholder="Example: 4" />
+          </div>
+
+          <button id="addTableBtn">Add Table</button>
+
+          <hr style="margin: 24px 0; border: 1px solid var(--border);" />
+
+          <h2>Table actions</h2>
+
+          <div class="form-group">
+            <label for="tableSelect">Choose table</label>
+            <select id="tableSelect"></select>
+          </div>
+
+          <div class="form-group">
+            <label for="customerCount">Customer count</label>
+            <input id="customerCount" type="number" min="1" placeholder="Enter number of customers" />
+          </div>
+
+          <div class="button-row">
+            <button id="assignBtn">Assign</button>
+            <button id="leaveBtn" class="secondary">Customers Leave</button>
+          </div>
+
+          <div class="button-row" style="margin-top: 10px;">
+            <button id="cleanBtn" class="secondary">Finish Cleaning</button>
+            <button id="updateBtn" class="secondary">Update Capacity</button>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="stats">
+            <div class="stat-card">
+              <div class="stat-label">Total tables</div>
+              <div id="totalTables" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Available</div>
+              <div id="availableTables" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Occupied</div>
+              <div id="occupiedTables" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Customers seated</div>
+              <div id="customerCountTotal" class="stat-value">0</div>
+            </div>
+          </div>
+
+          <div id="tableGrid" class="table-grid"></div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const tables = [
+        { tableNumber: 1, capacity: 4, status: 'AVAILABLE', customerCount: 0 },
+        { tableNumber: 2, capacity: 6, status: 'OCCUPIED', customerCount: 4 },
+        { tableNumber: 3, capacity: 2, status: 'CLEANING', customerCount: 0 }
+      ];
+
+      const elements = {
+        tableGrid: document.getElementById('tableGrid'),
+        tableSelect: document.getElementById('tableSelect'),
+        totalTables: document.getElementById('totalTables'),
+        availableTables: document.getElementById('availableTables'),
+        occupiedTables: document.getElementById('occupiedTables'),
+        customerCountTotal: document.getElementById('customerCountTotal'),
+        tableNumber: document.getElementById('tableNumber'),
+        tableCapacity: document.getElementById('tableCapacity'),
+        customerCount: document.getElementById('customerCount')
+      };
+
+      function getSelectedTable() {
+        const selectedTableNumber = Number(elements.tableSelect.value);
+        return tables.find((table) => table.tableNumber === selectedTableNumber);
+      }
+
+      function updateStats() {
+        const total = tables.length;
+        const available = tables.filter((table) => table.status === 'AVAILABLE').length;
+        const occupied = tables.filter((table) => table.status === 'OCCUPIED').length;
+        const seatedCustomers = tables.reduce((sum, table) => sum + table.customerCount, 0);
+
+        elements.totalTables.textContent = total;
+        elements.availableTables.textContent = available;
+        elements.occupiedTables.textContent = occupied;
+        elements.customerCountTotal.textContent = seatedCustomers;
+      }
+
+      function renderTableOptions() {
+        elements.tableSelect.innerHTML = '';
+
+        if (tables.length === 0) {
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = 'No tables available';
+          elements.tableSelect.appendChild(option);
+          return;
+        }
+
+        tables
+          .slice()
+          .sort((a, b) => a.tableNumber - b.tableNumber)
+          .forEach((table) => {
+            const option = document.createElement('option');
+            option.value = table.tableNumber;
+            option.textContent = `Table ${table.tableNumber}`;
+            elements.tableSelect.appendChild(option);
+          });
+      }
+
+      function renderTables() {
+        if (tables.length === 0) {
+          elements.tableGrid.innerHTML = '<div class="empty">No tables available yet. Add one from the form.</div>';
+          updateStats();
+          renderTableOptions();
+          return;
+        }
+
+        elements.tableGrid.innerHTML = tables
+          .slice()
+          .sort((a, b) => a.tableNumber - b.tableNumber)
+          .map((table) => {
+            const statusClass = `status-${table.status.toLowerCase()}`;
+
+            return `
+              <div class="table-card">
+                <div class="top">
+                  <div class="table-number">Table ${table.tableNumber}</div>
+                  <span class="badge ${statusClass}">${table.status}</span>
+                </div>
+
+                <div class="meta">
+                  <span>Capacity</span>
+                  <strong>${table.capacity}</strong>
+                </div>
+
+                <div class="meta">
+                  <span>Customers</span>
+                  <strong>${table.customerCount}</strong>
+                </div>
+              </div>
+            `;
+          })
+          .join('');
+
+        updateStats();
+        renderTableOptions();
+      }
+
+      function clearFormFields() {
+        elements.tableNumber.value = '';
+        elements.tableCapacity.value = '';
+        elements.customerCount.value = '';
+      }
+
+      function addTable() {
+        const tableNumber = Number(elements.tableNumber.value);
+        const capacity = Number(elements.tableCapacity.value);
+
+        if (!tableNumber || !capacity || tableNumber < 1 || capacity < 1) {
+          alert('Please enter a valid table number and capacity.');
+          return;
+        }
+
+        const alreadyExists = tables.some((table) => table.tableNumber === tableNumber);
+        if (alreadyExists) {
+          alert('This table number already exists.');
+          return;
+        }
+
+        tables.push({
+          tableNumber,
+          capacity,
+          status: 'AVAILABLE',
+          customerCount: 0
+        });
+
+        clearFormFields();
+        renderTables();
+      }
+
+      function assignCustomers() {
+        const selectedTable = getSelectedTable();
+        const customerTotal = Number(elements.customerCount.value);
+
+        if (!selectedTable) {
+          alert('Please select a valid table.');
+          return;
+        }
+
+        if (!customerTotal || customerTotal < 1) {
+          alert('Enter a valid number of customers.');
+          return;
+        }
+
+        if (selectedTable.status !== 'AVAILABLE') {
+          alert('This table is not available right now.');
+          return;
+        }
+
+        if (customerTotal > selectedTable.capacity) {
+          alert('This table does not have enough capacity.');
+          return;
+        }
+
+        selectedTable.customerCount = customerTotal;
+        selectedTable.status = 'OCCUPIED';
+        clearFormFields();
+        renderTables();
+      }
+
+      function customersLeave() {
+        const selectedTable = getSelectedTable();
+
+        if (!selectedTable) {
+          alert('Please select a valid table.');
+          return;
+        }
+
+        if (selectedTable.status !== 'OCCUPIED') {
+          alert('This table is not occupied.');
+          return;
+        }
+
+        selectedTable.customerCount = 0;
+        selectedTable.status = 'CLEANING';
+        renderTables();
+      }
+
+      function finishCleaning() {
+        const selectedTable = getSelectedTable();
+
+        if (!selectedTable) {
+          alert('Please select a valid table.');
+          return;
+        }
+
+        if (selectedTable.status !== 'CLEANING') {
+          alert('This table is not being cleaned.');
+          return;
+        }
+
+        selectedTable.customerCount = 0;
+        selectedTable.status = 'AVAILABLE';
+        renderTables();
+      }
+
+      function updateCapacity() {
+        const selectedTable = getSelectedTable();
+        const newCapacity = Number(prompt('Enter the new capacity for this table:'));
+
+        if (!selectedTable) {
+          alert('Please select a valid table.');
+          return;
+        }
+
+        if (!newCapacity || newCapacity < 1) {
+          alert('Capacity should be a valid positive number.');
+          return;
+        }
+
+        if (selectedTable.status !== 'AVAILABLE') {
+          alert('Capacity can only be changed when the table is free.');
+          return;
+        }
+
+        selectedTable.capacity = newCapacity;
+        renderTables();
+      }
+
+      document.getElementById('addTableBtn').addEventListener('click', addTable);
+      document.getElementById('assignBtn').addEventListener('click', assignCustomers);
+      document.getElementById('leaveBtn').addEventListener('click', customersLeave);
+      document.getElementById('cleanBtn').addEventListener('click', finishCleaning);
+      document.getElementById('updateBtn').addEventListener('click', updateCapacity);
+
+      renderTables();
+    </script>
+  </body>
+</html>
