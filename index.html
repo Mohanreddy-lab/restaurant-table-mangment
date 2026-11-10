@@ -56,17 +56,36 @@
   </table>
 
   <script>
-    const tables = [];
-
     const tableList = document.getElementById('tableList');
     const tableSelect = document.getElementById('tableSelect');
     const tableNumberInput = document.getElementById('tableNumber');
     const capacityInput = document.getElementById('tableCapacity');
     const customerCountInput = document.getElementById('customerCount');
+    let tables = [];
 
     function getSelectedTable() {
       const selectedNumber = Number(tableSelect.value);
       return tables.find((table) => table.tableNumber === selectedNumber);
+    }
+
+    async function request(path, values = {}, method = 'POST') {
+      const options = { method };
+      if (options.method === 'POST') {
+        options.headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+        options.body = new URLSearchParams(values);
+      }
+
+      const response = await fetch(path, options);
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'The request could not be completed.');
+      }
+      tables = result;
+      renderTables();
+    }
+
+    function showError(error) {
+      alert(error.message);
     }
 
     function updateStatistics() {
@@ -113,83 +132,68 @@
       updateStatistics();
     }
 
-    document.getElementById('addTableForm').addEventListener('submit', (event) => {
+    document.getElementById('addTableForm').addEventListener('submit', async (event) => {
       event.preventDefault();
 
       const tableNumber = Number(tableNumberInput.value);
       const capacity = Number(capacityInput.value);
-
-      if (tables.some((table) => table.tableNumber === tableNumber)) {
-        alert('That table number already exists.');
-        return;
+      try {
+        await request('/api/tables', { tableNumber, capacity });
+        event.target.reset();
+      } catch (error) {
+        showError(error);
       }
-
-      tables.push({
-        tableNumber,
-        capacity,
-        status: 'AVAILABLE',
-        customerCount: 0
-      });
-
-      event.target.reset();
-      renderTables();
     });
 
-    document.getElementById('assignBtn').addEventListener('click', () => {
+    document.getElementById('assignBtn').addEventListener('click', async () => {
       const table = getSelectedTable();
       const customerCount = Number(customerCountInput.value);
 
       if (!table) {
         alert('Please add and select a table first.');
-      } else if (table.status !== 'AVAILABLE') {
-        alert('This table is not available.');
-      } else if (!customerCount || customerCount > table.capacity) {
-        alert('Enter a customer count within the table capacity.');
       } else {
-        table.customerCount = customerCount;
-        table.status = 'OCCUPIED';
-        customerCountInput.value = '';
-        renderTables();
+        try {
+          await request(`/api/tables/${table.tableNumber}/assign`, { customerCount });
+          customerCountInput.value = '';
+        } catch (error) {
+          showError(error);
+        }
       }
     });
 
-    document.getElementById('leaveBtn').addEventListener('click', () => {
+    document.getElementById('leaveBtn').addEventListener('click', async () => {
       const table = getSelectedTable();
 
       if (!table) {
         alert('Please add and select a table first.');
-      } else if (table.status !== 'OCCUPIED') {
-        alert('This table is not occupied.');
       } else {
-        table.customerCount = 0;
-        table.status = 'CLEANING';
-        renderTables();
+        try {
+          await request(`/api/tables/${table.tableNumber}/leave`);
+        } catch (error) {
+          showError(error);
+        }
       }
     });
 
-    document.getElementById('cleanBtn').addEventListener('click', () => {
+    document.getElementById('cleanBtn').addEventListener('click', async () => {
       const table = getSelectedTable();
 
       if (!table) {
         alert('Please add and select a table first.');
-      } else if (table.status !== 'CLEANING') {
-        alert('This table is not being cleaned.');
       } else {
-        table.status = 'AVAILABLE';
-        renderTables();
+        try {
+          await request(`/api/tables/${table.tableNumber}/clean`);
+        } catch (error) {
+          showError(error);
+        }
       }
     });
 
-    document.getElementById('updateBtn').addEventListener('click', () => {
+    document.getElementById('updateBtn').addEventListener('click', async () => {
       const table = getSelectedTable();
 
       if (!table) {
         alert('Please add and select a table first.');
-        return;
-      }
-
-      if (table.status !== 'AVAILABLE') {
-        alert('You can only change capacity for an available table.');
         return;
       }
 
@@ -199,11 +203,14 @@
         return;
       }
 
-      table.capacity = newCapacity;
-      renderTables();
+      try {
+        await request(`/api/tables/${table.tableNumber}/capacity`, { capacity: newCapacity });
+      } catch (error) {
+        showError(error);
+      }
     });
 
-    renderTables();
+    request('/api/tables', {}, 'GET').catch(showError);
   </script>
 </body>
 </html>

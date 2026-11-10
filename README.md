@@ -2,7 +2,7 @@
 
 A small project for keeping track of restaurant tables. You can add tables, seat customers, mark tables for cleaning, and check how many tables are available.
 
-There are two ways to try it: a Java command-line version and a simple browser version.
+There is a Java command-line version and a browser version backed by a simple SQLite database.
 
 ## What it can do
 
@@ -26,8 +26,11 @@ Follow the numbered menu to manage tables.
 
 ## Run the browser version
 
-Open `index.html` in a web browser. You can add and manage tables directly on the page; no server or extra packages are needed.
+Compile and start the Java server:
 
-## A note about saving data
+```bash
+javac Backend.java
+java -cp ".;sqlite-jdbc.jar;slf4j-api.jar" Backend
+```
 
-Tables are kept in memory, so they’re cleared when you close the Java program or refresh the browser page. This project doesn’t currently save table information between sessions.
+Open http://localhost:8080 in a browser. The browser version stores tables in `tables.db`.
